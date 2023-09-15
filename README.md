@@ -1,6 +1,7 @@
 # D3 Scatterplot Project
 
 This is a simple D3.js scatterplot project that displays cyclist data with and without doping allegations. The chart visualizes the relationship between the year of the race and the time taken by the cyclists.
+![Screenshot](./screenshot.png)
 
 ## How to Use
 
