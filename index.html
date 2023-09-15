@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D3 Scatterplot</title>
+    <script src="https://d3js.org/d3.v7.min.js" defer></script>
+    <style>
+      /* Add CSS styles for better chart dimensions */
+      .chart-container {
+        margin: 0 auto;
+      }
+      /* Add CSS styles to center the chart */
+      svg {
+        display: block;
+        margin: 0 auto;
+      }
+
+      html,
+      body {
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
+          sans-serif;
+      }
+      h1 {
+        margin: 0 auto;
+        text-align: center;
+      }
+      h2 {
+        margin-bottom: 75px;
+      }
+
+      .doped {
+        fill: green;
+        stroke: black;
+        stroke-width: 1;
+      }
+
+      .dot {
+        fill: red;
+        stroke: black;
+        stroke-width: 1;
+      }
+      .legend {
+        position: absolute;
+        top: 250px;
+        right: 200px;
+        text-align: left;
+        padding: 5px;
+        line-height: 5px;
+      }
+
+      .tooltip {
+        text-align: left;
+        background: gray;
+        border: 1px solid #ccc;
+        padding: 10px;
+        color: white;
+        pointer-events: none;
+        border-radius: 20px;
+        margin: 0 auto;
+        max-width: fit-content; /* Adjust as needed */
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Create a container div for the chart -->
+    <div class="chart-container">
+      <h1>Scatterplot Chart</h1>
+      <svg width="100%" height="500">
+        <g id="x-axis"></g>
+        <g id="y-axis"></g>
+        <g id="chart"></g>
+      </svg>
+      <div class="legend">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          style="display: inline-block; vertical-align: middle"
+        >
+          <circle cx="12" cy="12" r="12" fill="red" />
+        </svg>
+        Riders with doping allegations
+        <br />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          style="display: inline-block; vertical-align: middle"
+        >
+          <circle cx="12" cy="12" r="12" fill="green" />
+        </svg>
+        No doping allegations
+      </div>
+
+      <div class="tooltip"></div>
+    </div>
+
+    <script>
+      // Main code block
+      let dataset = [];
+      document.addEventListener("DOMContentLoaded", async function () {
+        try {
+          const response = await fetch(
+            "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json"
+          );
+          const data = await response.json();
+          dataset = data;
+
+          // Chart dimensions and margins
+          const margin = {
+            top: 50,
+            right: 50,
+            bottom: 50,
+            left: 50,
+          };
+          const chartWidth = 1200 - margin.left - margin.right;
+          const chartHeight = 550 - margin.top - margin.bottom;
+
+          // Parse the data
+          const parseYear = d3.timeParse("%Y");
+          data.forEach(function (d) {
+            d.Year = parseYear(d.Year);
+            d.ParsedTime = new Date(
+              0,
+              0,
+              0,
+              0,
+              d.Time.split(":")[0],
+              d.Time.split(":")[1]
+            );
+          });
+
+          // Create scales
+          const xScale = d3
+            .scaleTime()
+            .domain(d3.extent(data, (d) => d.Year))
+            .range([0, chartWidth])
+            .nice(3);
+
+          const yScale = d3
+            .scaleTime()
+            .domain(d3.extent(data, (d) => d.ParsedTime))
+            .range([chartHeight, 0])
+            .nice(5);
+
+          // Create axes
+          const xAxis = d3.axisBottom(xScale);
+          const yAxis = d3.axisLeft(yScale).tickFormat(d3.timeFormat("%M:%S"));
+
+          // Create the SVG container
+          const svg = d3
+            .select("svg")
+            .attr("width", chartWidth + margin.left + margin.right)
+            .attr("height", chartHeight + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+          // Append axes
+          svg
+            .append("g")
+            .attr("id", "x-axis")
+            .attr("transform", `translate(0,${chartHeight})`)
+            .call(xAxis);
+
+          svg.append("g").attr("id", "y-axis").call(yAxis);
+
+          // Create circles with tooltips
+          // Create circles with tooltips
+          svg
+            .selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", (d) => xScale(d.Year))
+            .attr("cy", (d) => yScale(d.ParsedTime))
+            .attr("r", 8)
+            .attr("data-xvalue", (d) => d.Year)
+            .attr("data-yvalue", (d) => d.ParsedTime)
+            .attr("class", (d) => (d.Doping == "" ? "doped" : "dot")) // Add a class based on the "doped" property
+
+            // Inside the mouseover event handler
+            // Inside the mouseover event handler
+            .on("mouseover", function (event, data) {
+              // Change 'd' to 'data' for the data object
+              const tooltip = d3.select(".tooltip");
+              tooltip.transition().duration(200).style("opacity", 0.9);
+
+              // Calculate the tooltip position relative to the container
+              const container = document.querySelector(".chart-container");
+              const containerRect = container.getBoundingClientRect();
+              const tooltipX = event.pageX - containerRect.left + 10; // Adjust the position as needed
+              const tooltipY = event.pageY - containerRect.top - 10; // Adjust the position as needed
+
+              tooltip.style("left", `${tooltipX}px`);
+              tooltip.style("top", `${tooltipY}px`);
+
+              // Check if data.Year is a valid number before calling getFullYear()
+              if (!isNaN(data.Year)) {
+                tooltip.html(
+                  `${data.Name}: ${
+                    data.Nationality
+                  }<br>Year: ${data.Year.getFullYear()}<br>Time: ${
+                    data.Time
+                  }<br>${data.Doping ? data.Doping : "No doping allegations"}`
+                );
+              } else {
+                tooltip.html(`Year: ${data.Year}`);
+              }
+            })
+
+            .on("mouseout", function () {
+              const tooltip = d3.select(".tooltip");
+              tooltip.transition().duration(500).style("opacity", 0);
+            });
+        } catch (error) {
+          console.error("Error fetching or parsing data:", error);
+        }
+      });
+    </script>
+  </body>
+</html>
