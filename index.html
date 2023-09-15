@@ -170,6 +170,23 @@
 
           svg.append("g").attr("id", "y-axis").call(yAxis);
 
+          // Add X axis label:
+          svg
+            .append("text")
+            .attr("text-anchor", "end")
+            .attr("x", chartWidth)
+            .attr("y", chartHeight + margin.top)
+            .text("Year");
+
+          // Y axis label:
+          svg
+            .append("text")
+            .attr("text-anchor", "end")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left + 10)
+            .attr("x", -margin.top)
+            .text("Time in Minutes");
+
           // Create circles with tooltips
           // Create circles with tooltips
           svg
