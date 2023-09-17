@@ -57,7 +57,7 @@
         pointer-events: none;
         border-radius: 20px;
         margin: 0 auto;
-        max-width: fit-content; /* Adjust as needed */
+        max-width: fit-content;
         opacity: 0;
       }
     </style>
@@ -190,7 +190,6 @@
             .text("Time in Minutes");
 
           // Create circles with tooltips
-          // Create circles with tooltips
           svg
             .selectAll("circle")
             .data(data)
@@ -201,9 +200,8 @@
             .attr("r", 8)
             .attr("data-xvalue", (d) => d.Year)
             .attr("data-yvalue", (d) => d.ParsedTime)
-            .attr("class", (d) => (d.Doping == "" ? "doped" : "dot")) // Add a class based on the "doped" property
+            .attr("class", (d) => (d.Doping == "" ? "doped" : "dot"))
 
-            // Inside the mouseover event handler
             // Inside the mouseover event handler
             .on("mouseover", function (event, data) {
               // Change 'd' to 'data' for the data object
@@ -213,8 +211,8 @@
               // Calculate the tooltip position relative to the container
               const container = document.querySelector(".chart-container");
               const containerRect = container.getBoundingClientRect();
-              const tooltipX = event.pageX - containerRect.left + 10; // Adjust the position as needed
-              const tooltipY = event.pageY - containerRect.top - 10; // Adjust the position as needed
+              const tooltipX = event.pageX - containerRect.left + 10;
+              const tooltipY = event.pageY - containerRect.top - 10;
 
               tooltip.style("left", `${tooltipX}px`);
               tooltip.style("top", `${tooltipY}px`);
